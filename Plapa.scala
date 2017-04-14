@@ -2,10 +2,10 @@ object Plapa {
 
 	// Monadic parser: takes a string (stream would be better) of grammar 
 	//   and returns a list of parsing theories,
-	//	 each theory being a tuple of the thing found and the rest of the string
+	//   each theory being a tuple of the thing found and the rest of the string
 	type ParseF[A] = String => List[(A, String)]
 
-	// Wrap the parser function in a monad so we can specialise acordingly
+	// Wrap the parser function in a monad so we can specialise accordingly
 	case class ParseM[A] ( f : ParseF[A] ) {
 		
 		// Run the parser, choosing any surviving theory
@@ -14,20 +14,19 @@ object Plapa {
 		// Sequence two parsers to make a compound production
 		//	 Analogous to Haskell's bind
 		def flatMap[B] ( g : A => ParseM[B] ) = ParseM[B] ( 
-		 	s => for { (a, s1) <- f(s); (b, s2) <- g(a).f(s1) } yield (b, s2) ) 
+			s => for { (a, s1) <- f(s); (b, s2) <- g(a).f(s1) } yield (b, s2) ) 
 
 		//Implement Functor and hope for...yield becomes Haskell's do...return	
 		def map[B] ( g : A => B ) = ParseM[B] ( 
-		 	s => for { (a, s1) <- f(s) } yield (g(a), s1) ) 
+			s => for { (a, s1) <- f(s) } yield (g(a), s1) ) 
 
 		// Options in the grammar
 		def or ( g : ParseM[A] ) = ParseM[A] ( 
-		 	s => f(s) ::: g.f(s)) 
+			s => f(s) ::: g.f(s)) 
 
 		// Repeat a production, folding the results
 		def many[B] (sofar: B, op: A => B => B) : ParseM[B] = 
 			flatMap ( d => many( op(d)(sofar), op ) ) or returnP(sofar)
-
 	}
 
 	// Haskell's return for this monad. 
@@ -60,7 +59,6 @@ object Plapa {
 		println( grammar.parse("B29876and the rest"))
 		// Output: Some(((9876,2B),and the rest))
 	}
-
 }
 
 
